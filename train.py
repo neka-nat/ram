@@ -114,9 +114,8 @@ if not args.lstm:
     data = model.core_hh.W.data
     data[:] = np.identity(data.shape[0], dtype=np.float32)
 
-from nesterov_ag import NesterovAG
 lr_base = 1e-2
-optimizer = NesterovAG(lr=lr_base)
+optimizer = optimizers.NesterovAG(lr=lr_base)
 optimizer.use_cleargrads()
 optimizer.setup(model)
 

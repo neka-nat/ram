@@ -45,18 +45,21 @@ class RAM(chainer.Chain):
             self.core_lstm.reset_state()
         else:
             self.h = self.xp.zeros(shape=(bs,self.d_core), dtype=np.float32)
-            self.h = chainer.Variable(self.h, volatile=not train)
+            with chainer.using_config('enable_backprop', train):
+                self.h = chainer.Variable(self.h)
 
 
     def __call__(self, x, t, train=True):
-        x = chainer.Variable(self.xp.asarray(x), volatile=not train)
-        t = chainer.Variable(self.xp.asarray(t), volatile=not train)
+        with chainer.using_config('enable_backprop', train):
+            x = chainer.Variable(self.xp.asarray(x))
+            t = chainer.Variable(self.xp.asarray(t))
         bs = x.data.shape[0] # batch size
         self.clear(bs, train)
 
         # init mean location
         l = np.random.uniform(-1, 1, size=(bs,2)).astype(np.float32)
-        l = chainer.Variable(self.xp.asarray(l), volatile=not train)
+        with chainer.using_config('enable_backprop', train):
+            l = chainer.Variable(self.xp.asarray(l))
 
         # forward n_steps time
         sum_ln_pi = 0
@@ -101,7 +104,8 @@ class RAM(chainer.Chain):
 
                 # log(location policy)
                 ln_pi = -0.5 * F.sum((l-m)*(l-m), axis=1) / self.var
-                l = chainer.Variable(l, volatile=not train)
+                with chainer.using_config('enable_backprop', train):
+                    l = chainer.Variable(l)
             else:
                 l = m
                 ln_pi = None
